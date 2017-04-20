@@ -56,30 +56,14 @@ fullPath(node(N, PL, _, _, _)):- PL =:= N*N.
 % comprueba que haya nodos sucesores a partir de Node y construye los movimientos posibles,
 % de uno en uno, y comprobando si son casillas válidas (validSquare) y por lo tanto movimientos
 % válidos que generan un nodo sucesor (NNode).
-jump(Node, NNuevo):-
-    %write('jump 1: ' ), write(Node), nl,
-    moveAux(Node, NNuevo).
-    %write('jump 2: ' ), write(NNuevo), nl, nl.
-%jump(Node, NNuevo):- check(Node,-2,1), move(Node,-2,1,NNuevo).
-%jump(Node, NNuevo):- check(Node,2,1), move(Node,2,1,NNuevo).
-%jump(Node, NNuevo):- check(Node,2,-1), move(Node,2,-1,NNuevo).
-%jump(Node, NNuevo):- check(Node,1,2), move(Node,1,2,NNuevo).
-%jump(Node, NNuevo):- check(Node,1,-2), move(Node,1,-2,NNuevo).
-%jump(Node, NNuevo):- check(Node,-1,2), move(Node,-1,2,NNuevo).
-%jump(Node, NNuevo):- check(Node,-1,-2), move(Node,-1,-2,NNuevo).
-%jump(Node, NNuevo):- false, !.
-%NNuevo = node(0,0,[],s(0,0),[]).
-
-moveAux(Node,NNuevo):-
-    move(Node, -2,-1, NNuevo);
-    move(Node, -2,1, NNuevo);
-    move(Node, 2,1, NNuevo);
-    move(Node, 2,-1, NNuevo);
-    move(Node, 1,2, NNuevo);
-    move(Node, 1,-2, NNuevo);
-    move(Node, -1,2, NNuevo);
-    move(Node, -1,-2, NNuevo).
-    %!, fail.
+jump(Node, NNuevo):- move(Node,-2,-1,NNuevo).
+jump(Node, NNuevo):- move(Node,2,1,NNuevo).
+jump(Node, NNuevo):- move(Node,-2,1,NNuevo).
+jump(Node, NNuevo):- move(Node,2,-1,NNuevo).
+jump(Node, NNuevo):- move(Node,1,2,NNuevo).
+jump(Node, NNuevo):- move(Node,1,-2,NNuevo).
+jump(Node, NNuevo):- move(Node,-1,2,NNuevo).
+jump(Node, NNuevo):- move(Node,-1,-2,NNuevo).
 
 move(node(N,Length,Board,s(F,R),Path), FOffset, ROffset, NNuevo):-
     %write('move Board: '), write(Board), write(' '), write(FOffset), write(' '), write(ROffset), nl,
