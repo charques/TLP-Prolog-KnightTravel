@@ -45,9 +45,9 @@ freeSquare(Board,s(F,R)):-
 validSquare(N,s(F,R),Board,BoardNuevo):-
     inBoard(N,s(F,R)),
     freeSquare(Board,s(F,R)),
-    visitSquare(s(F,R),Board,BoardNuevo).
-    %write('validSquare: '), write(F), write(' '), write(R), write(' Old: '), write(Board), nl,
-    %write('validSquare: '), write(F), write(' '), write(R), write(' New: '), write(BoardNuevo), nl.
+    visitSquare(s(F,R),Board,BoardNuevo),
+    write('validSquare: '), write(F), write(' '), write(R), write(' Old: '), write(Board), nl,
+    write('validSquare: '), write(F), write(' '), write(R), write(' New: '), write(BoardNuevo), nl.
 
 % para comprobar si en un nodo del espacio de búsqueda hay, o no, una solución, esto es, si contiene,
 % o no, un camino completo (que recorra todo el tablero).
@@ -56,16 +56,50 @@ fullPath(node(N, PL, _, _, _)):- PL =:= N*N.
 % comprueba que haya nodos sucesores a partir de Node y construye los movimientos posibles,
 % de uno en uno, y comprobando si son casillas válidas (validSquare) y por lo tanto movimientos
 % válidos que generan un nodo sucesor (NNode).
-jump(Node, NNuevo):- check(Node,-2,-1), move(Node,-2,-1,NNuevo).
-jump(Node, NNuevo):- check(Node,-2,1), move(Node,-2,1,NNuevo).
-jump(Node, NNuevo):- check(Node,2,1), move(Node,2,1,NNuevo).
-jump(Node, NNuevo):- check(Node,2,-1), move(Node,2,-1,NNuevo).
-jump(Node, NNuevo):- check(Node,1,2), move(Node,1,2,NNuevo).
-jump(Node, NNuevo):- check(Node,1,-2), move(Node,1,-2,NNuevo).
-jump(Node, NNuevo):- check(Node,-1,2), move(Node,-1,2,NNuevo).
-jump(Node, NNuevo):- check(Node,-1,-2), move(Node,-1,-2,NNuevo).
+jump(Node, NNuevo):-
+    write('jump 1: ' ), write(Node), nl,
+    moveAux(Node,NNuevo),
+    write('jump 2: ' ), write(NNuevo), nl, nl.
+%jump(Node, NNuevo):- check(Node,-2,1), move(Node,-2,1,NNuevo).
+%jump(Node, NNuevo):- check(Node,2,1), move(Node,2,1,NNuevo).
+%jump(Node, NNuevo):- check(Node,2,-1), move(Node,2,-1,NNuevo).
+%jump(Node, NNuevo):- check(Node,1,2), move(Node,1,2,NNuevo).
+%jump(Node, NNuevo):- check(Node,1,-2), move(Node,1,-2,NNuevo).
+%jump(Node, NNuevo):- check(Node,-1,2), move(Node,-1,2,NNuevo).
+%jump(Node, NNuevo):- check(Node,-1,-2), move(Node,-1,-2,NNuevo).
 %jump(Node, NNuevo):- false, !.
 %NNuevo = node(0,0,[],s(0,0),[]).
+
+moveAux(Node,NNuevo):-
+    move(Node, -2,-1, NNuevo);
+    move(Node, -2,1, NNuevo);
+    move(Node, 2,1, NNuevo);
+    move(Node, 2,-1, NNuevo);
+    move(Node, 1,2, NNuevo);
+    move(Node, 1,-2, NNuevo);
+    move(Node, -1,2, NNuevo);
+    move(Node, -1,-2, NNuevo).
+    %back(Node, NNuevo), !, fail.
+    %NNuevo = node(0,0,[],s(0,0),[]).
+    %!, fail.
+
+
+%IMPLEMENTAR FREE SQUARE DE OTRO MODO - COMO DICE EL ENUNCIADO
+
+back(node(N,Length,Board,s(F,R),Path), NNuevo):-
+    last(Path, Last),
+    delete(Path, Last, NewPath),
+    NewLength is Length-1,
+    visitSquare2(Last,Board,NewBoard),
+    write('back '), write(node(N,NewLength,NewBoard,Last,NewPath)), nl,
+    NNuevo = node(N,NewLength,NewBoard,Last,NewPath).
+
+visitSquare2(s(F,R),Board,BoardSol):-
+    FileIndex is F-1,
+    RankIndex is R-1,
+    nth0(RankIndex, Board, Rank),
+    replace(Rank, FileIndex, true, NewRank),
+    replace(Board, RankIndex, NewRank, BoardSol).
 
 check(node(N,_,Board,s(F,R),_), FOffset, ROffset):-
     FileIndex is F + FOffset,
@@ -75,11 +109,11 @@ check(node(N,_,Board,s(F,R),_), FOffset, ROffset):-
     write('check '), write(FileIndex), write(' '), write(RankIndex), write(' '), write(Board), nl.
 
 move(node(N,Length,Board,s(F,R),Path), FOffset, ROffset, NNuevo):-
-    write('move Path: '), write(Path), nl,
+    write('move Board: '), write(Board), write(' '), write(FOffset), write(' '), write(ROffset), nl,
     FileIndex is F + FOffset,
     RankIndex is R + ROffset,
     NewLength is Length + 1,
-    validSquare(N,s(FileIndex,RankIndex),Board,BoardNuevo),
+    validSquare(N,s(FileIndex,RankIndex),Board,BoardNuevo), !,
     %write(FileIndex), write(' '), write(RankIndex), nl,
     append(Path,[s(FileIndex,RankIndex)],NewPath),
     NNuevo = node(N,NewLength,BoardNuevo,s(FileIndex,RankIndex),NewPath),
