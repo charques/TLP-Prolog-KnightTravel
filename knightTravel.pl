@@ -49,8 +49,6 @@ validSquare(N,s(F,R),Board,BoardNuevo):-
     %visita(s(F,R),Board,BoardNuevo).
     freeSquare(Board,s(F,R)),
     visitSquare(s(F,R),Board,BoardNuevo).
-    %write('validSquare: '), write(F), write(' '), write(R), write(' Old: '), write(Board), nl,
-    %write('validSquare: '), write(F), write(' '), write(R), write(' New: '), write(BoardNuevo), nl.
 
 % para comprobar si en un nodo del espacio de búsqueda hay, o no, una solución, esto es, si contiene,
 % o no, un camino completo (que recorra todo el tablero).
@@ -59,46 +57,28 @@ fullPath(node(N, PL, _, _, _)):- PL =:= N*N.
 % comprueba que haya nodos sucesores a partir de Node y construye los movimientos posibles,
 % de uno en uno, y comprobando si son casillas válidas (validSquare) y por lo tanto movimientos
 % válidos que generan un nodo sucesor (NNode).
-%jump(Node, NNuevo):- move(Node,-2,-1,NNuevo).
-%jump(Node, NNuevo):- move(Node,2,1,NNuevo).
-%jump(Node, NNuevo):- move(Node,-2,1,NNuevo).
-%jump(Node, NNuevo):- move(Node,2,-1,NNuevo).
-%jump(Node, NNuevo):- move(Node,1,2,NNuevo).
-%jump(Node, NNuevo):- move(Node,1,-2,NNuevo).
-%jump(Node, NNuevo):- move(Node,-1,2,NNuevo).
-%jump(Node, NNuevo):- move(Node,-1,-2,NNuevo).
+jump(Node, NNuevo):-
+    node(N,Length,Board,s(F,R),Path) = Node,
+    possibleKnightMove(s(F,R), s(F1,R1)),
+    move(node(N,Length,Board,s(F,R),Path), s(F1,R1), NNuevo).
 
-jump(Node, NNuevo):- jumpAux(Node, NNuevo).
+% construye los posibles movimientos
+possibleKnightMove(s(F,R), s(F1,R1)) :- F1 is F+1, R1 is R+2.
+possibleKnightMove(s(F,R), s(F1,R1)) :- F1 is F+2, R1 is R+1.
+possibleKnightMove(s(F,R), s(F1,R1)) :- F1 is F+2, R1 is R-1.
+possibleKnightMove(s(F,R), s(F1,R1)) :- F1 is F+1, R1 is R-2.
+possibleKnightMove(s(F,R), s(F1,R1)) :- F1 is F-1, R1 is R-2.
+possibleKnightMove(s(F,R), s(F1,R1)) :- F1 is F-2, R1 is R+1.
+possibleKnightMove(s(F,R), s(F1,R1)) :- F1 is F-2, R1 is R-1.
+possibleKnightMove(s(F,R), s(F1,R1)) :- F1 is F-1, R1 is R+2.
 
-jumpAux(node(N,Length,Board,s(F,R),Path), NNuevo):-
-    possibleKnightMove(s(F,R), F1, R1),
-    moveAux(node(N,Length,Board,s(F,R),Path), F1, R1, NNuevo).
-
-possibleKnightMove(s(F,R), F1, R1) :- F1 is F+1, R1 is R+2.
-possibleKnightMove(s(F,R), F1, R1) :- F1 is F+2, R1 is R+1.
-possibleKnightMove(s(F,R), F1, R1) :- F1 is F+2, R1 is R-1.
-possibleKnightMove(s(F,R), F1, R1) :- F1 is F+1, R1 is R-2.
-possibleKnightMove(s(F,R), F1, R1) :- F1 is F-1, R1 is R-2.
-possibleKnightMove(s(F,R), F1, R1) :- F1 is F-2, R1 is R+1.
-possibleKnightMove(s(F,R), F1, R1) :- F1 is F-2, R1 is R-1.
-possibleKnightMove(s(F,R), F1, R1) :- F1 is F-1, R1 is R+2.
-
-moveAux(node(N,Length,Board,_,Path), F1, R1, NNuevo):-
-    %write('move Board: '), write(Board), write(' '), write(F1), write(' '), write(R1), nl,
-    validSquare(N,s(F1,R1),Board,BoardNuevo), !,
+% contruye un nuevo nodo para el primera posición válida
+move(node(N,Length,Board,_,Path), s(F1,R1), NNuevo):-
+    validSquare(N,s(F1,R1),Board,BoardNuevo),
+    write(s(F1,R1)),
     NewLength is Length + 1,
     append(Path,[s(F1,R1)],NewPath),
     NNuevo = node(N,NewLength,BoardNuevo,s(F1,R1),NewPath).
-
-move(node(N,Length,Board,s(F,R),Path), FOffset, ROffset, NNuevo):-
-    write('move Board: '), write(Board), write(' '), write(FOffset), write(' '), write(ROffset), nl,
-    FileIndex is F + FOffset,
-    RankIndex is R + ROffset,
-    validSquare(N,s(FileIndex,RankIndex),Board,BoardNuevo), !,
-    NewLength is Length + 1,
-    append(Path,[s(FileIndex,RankIndex)],NewPath),
-    NNuevo = node(N,NewLength,BoardNuevo,s(FileIndex,RankIndex),NewPath).
-    %write('move NNuevo: '), write(NNuevo), nl, nl.
 
 % Es la función principal, que recibe un entero representando el tamaño del tablero,
 % una casilla desde la que el caballo iniciará su recorrido y devuelve un camino que
@@ -114,6 +94,5 @@ recorrerBT(Node):-
     fullPath(Node),
     write('result: '), write(Node).
 recorrerBT(Node):-
-    write('recorrerBT: '), write(Node), nl,
     jump(Node,NNuevo),
     recorrerBT(NNuevo).
