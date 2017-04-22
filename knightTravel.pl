@@ -13,7 +13,7 @@ columnaVacia(N,[true|CV]):-
 initBoard(N,s(F,R),node(N,1,Board,s(F,R),[s(F,R)])):-
     tableroVacio(N,Board0),
     inBoard(N,s(F,R)),!,
-    visitSquare(s(F,R),Board0,Board).
+    visitSquare(s(F,R),Board0,Board), !.
 
 % Comprobar si la casilla s(F,R) está dentro de un tablero de tamaño N.
 inBoard(N,s(F,R)):- F > 0, R > 0, F =< N, R =< N.
@@ -35,8 +35,10 @@ replace(L, _, _, L).
 freeSquare(Board,s(F,R)):-
     nth1(R, Board, File),
     nth1(F, File, Value),
-    %write('freeSquare: '), write(F), write(' '), write(R), write(' '), write(Value), nl,
     Value.
+
+%visita(s(F,R),Board,BoardNuevo):-
+
 
 % comprueba que en el tablero (Board) de tamaño N, se puede ir a la casilla s(F,R),
 % porque está en el tablero (inBoard) y está libre (freeSquare). Además coloca
@@ -44,6 +46,7 @@ freeSquare(Board,s(F,R)):-
 % construyendo el nuevo tablero (BoardNuevo).
 validSquare(N,s(F,R),Board,BoardNuevo):-
     inBoard(N,s(F,R)),
+    %visita(s(F,R),Board,BoardNuevo).
     freeSquare(Board,s(F,R)),
     visitSquare(s(F,R),Board,BoardNuevo).
     %write('validSquare: '), write(F), write(' '), write(R), write(' Old: '), write(Board), nl,
@@ -56,17 +59,39 @@ fullPath(node(N, PL, _, _, _)):- PL =:= N*N.
 % comprueba que haya nodos sucesores a partir de Node y construye los movimientos posibles,
 % de uno en uno, y comprobando si son casillas válidas (validSquare) y por lo tanto movimientos
 % válidos que generan un nodo sucesor (NNode).
-jump(Node, NNuevo):- move(Node,-2,-1,NNuevo).
-jump(Node, NNuevo):- move(Node,2,1,NNuevo).
-jump(Node, NNuevo):- move(Node,-2,1,NNuevo).
-jump(Node, NNuevo):- move(Node,2,-1,NNuevo).
-jump(Node, NNuevo):- move(Node,1,2,NNuevo).
-jump(Node, NNuevo):- move(Node,1,-2,NNuevo).
-jump(Node, NNuevo):- move(Node,-1,2,NNuevo).
-jump(Node, NNuevo):- move(Node,-1,-2,NNuevo).
+%jump(Node, NNuevo):- move(Node,-2,-1,NNuevo).
+%jump(Node, NNuevo):- move(Node,2,1,NNuevo).
+%jump(Node, NNuevo):- move(Node,-2,1,NNuevo).
+%jump(Node, NNuevo):- move(Node,2,-1,NNuevo).
+%jump(Node, NNuevo):- move(Node,1,2,NNuevo).
+%jump(Node, NNuevo):- move(Node,1,-2,NNuevo).
+%jump(Node, NNuevo):- move(Node,-1,2,NNuevo).
+%jump(Node, NNuevo):- move(Node,-1,-2,NNuevo).
+
+jump(Node, NNuevo):- jumpAux(Node, NNuevo).
+
+jumpAux(node(N,Length,Board,s(F,R),Path), NNuevo):-
+    possibleKnightMove(s(F,R), F1, R1),
+    moveAux(node(N,Length,Board,s(F,R),Path), F1, R1, NNuevo).
+
+possibleKnightMove(s(F,R), F1, R1) :- F1 is F+1, R1 is R+2.
+possibleKnightMove(s(F,R), F1, R1) :- F1 is F+2, R1 is R+1.
+possibleKnightMove(s(F,R), F1, R1) :- F1 is F+2, R1 is R-1.
+possibleKnightMove(s(F,R), F1, R1) :- F1 is F+1, R1 is R-2.
+possibleKnightMove(s(F,R), F1, R1) :- F1 is F-1, R1 is R-2.
+possibleKnightMove(s(F,R), F1, R1) :- F1 is F-2, R1 is R+1.
+possibleKnightMove(s(F,R), F1, R1) :- F1 is F-2, R1 is R-1.
+possibleKnightMove(s(F,R), F1, R1) :- F1 is F-1, R1 is R+2.
+
+moveAux(node(N,Length,Board,_,Path), F1, R1, NNuevo):-
+    %write('move Board: '), write(Board), write(' '), write(F1), write(' '), write(R1), nl,
+    validSquare(N,s(F1,R1),Board,BoardNuevo), !,
+    NewLength is Length + 1,
+    append(Path,[s(F1,R1)],NewPath),
+    NNuevo = node(N,NewLength,BoardNuevo,s(F1,R1),NewPath).
 
 move(node(N,Length,Board,s(F,R),Path), FOffset, ROffset, NNuevo):-
-    %write('move Board: '), write(Board), write(' '), write(FOffset), write(' '), write(ROffset), nl,
+    write('move Board: '), write(Board), write(' '), write(FOffset), write(' '), write(ROffset), nl,
     FileIndex is F + FOffset,
     RankIndex is R + ROffset,
     validSquare(N,s(FileIndex,RankIndex),Board,BoardNuevo), !,
