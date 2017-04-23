@@ -13,39 +13,28 @@ columnaVacia(N,[true|CV]):-
 initBoard(N,s(F,R),node(N,1,Board,s(F,R),[s(F,R)])):-
     tableroVacio(N,Board0),
     inBoard(N,s(F,R)),!,
-    visitSquare(s(F,R),Board0,Board), !.
+    visita(Board0,s(F,R),Board), !.
 
 % Comprobar si la casilla s(F,R) está dentro de un tablero de tamaño N.
 inBoard(N,s(F,R)):- F > 0, R > 0, F =< N, R =< N.
 
-% Dada una casilla (s(F,R)), cambiar su valor a falso en un tablero dado (Board).
-visitSquare(s(F,R),Board,BoardSol):-
-    FileIndex is F-1,
-    RankIndex is R-1,
-    nth0(RankIndex, Board, Rank),
-    replaceInThePosition(Rank, FileIndex, false, NewRank),
-    replaceInThePosition(Board, RankIndex, NewRank, BoardSol).
+% Itera sobre las columnas del tablero para marcar la posicion indicada por s(F,R)
+visita([Rank|T],s(F,1),[NewRank|T]):- visitaColumna(Rank, F, NewRank).
+visita([H|T],s(F,R),[H|E]) :- R > 1, NR is R-1, visita(T,s(F,NR),E), !.
 
-% reemplaza el elemento P de la lista por el elemento E
-replaceInThePosition([_|T],0,E,[E|T]).
-replaceInThePosition([H|T],P,E,[H|R]) :-
-    P > 0, NP is P-1, replaceInThePosition(T,NP,E,R), !.
-
-% comprueba que para el tablero Board la casilla s(F,R) esta libre.
-freeSquare(Board,s(F,R)):-
-    nth1(R, Board, File),
-    nth1(F, File, Value),
-    Value.
+% Itera sobre la columna para sustituir el valor si Value = true.
+visitaColumna([Value|T],1,Rep):-
+    Value,
+    Rep = [false|T].
+visitaColumna([H|T],P,[H|R]) :-
+    P > 1, NP is P-1, visitaColumna(T,NP,R), !.
 
 % comprueba que en el tablero (Board) de tamaño N, se puede ir a la casilla s(F,R),
-% porque está en el tablero (inBoard) y está libre (freeSquare). Además coloca
-% (pone a false esa posición en Board con visitSquare) el caballo en la posición s(F,R),
-% construyendo el nuevo tablero (BoardNuevo).
+% porque está en el tablero (inBoard). El método (visita) chequea que la posición no ha sido visitada al mismo tiempo
+% que coloca el caballo en la posición s(F,R), construyendo el nuevo tablero (BoardNuevo).
 validSquare(N,s(F,R),Board,BoardNuevo):-
     inBoard(N,s(F,R)),
-    %visita(s(F,R),Board,BoardNuevo).
-    freeSquare(Board,s(F,R)),
-    visitSquare(s(F,R),Board,BoardNuevo).
+    visita(Board,s(F,R),BoardNuevo).
 
 % para comprobar si en un nodo del espacio de búsqueda hay, o no, una solución, esto es, si contiene,
 % o no, un camino completo (que recorra todo el tablero).
