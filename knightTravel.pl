@@ -74,8 +74,7 @@ possibleKnightMove(s(F,R), s(F1,R1)) :- F1 is F-1, R1 is R+2.
 
 % contruye un nuevo nodo para el primera posición válida
 move(node(N,Length,Board,_,Path), s(F1,R1), NNuevo):-
-    validSquare(N,s(F1,R1),Board,BoardNuevo),
-    write(s(F1,R1)),
+    validSquare(N,s(F1,R1),Board,BoardNuevo), !,
     NewLength is Length + 1,
     append(Path,[s(F1,R1)],NewPath),
     NNuevo = node(N,NewLength,BoardNuevo,s(F1,R1),NewPath).
