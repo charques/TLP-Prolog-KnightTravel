@@ -13,35 +13,29 @@ columnaVacia(N,[true|CV]):-
 initBoard(N,s(F,R),node(N,1,Board,s(F,R),[s(F,R)])):-
     tableroVacio(N,Board0),
     inBoard(N,s(F,R)),!,
-    visitSquare(s(F,R),Board0,Board), !.
+    visita(s(F,R),Board0,Board), !.
 
 % Comprobar si la casilla s(F,R) está dentro de un tablero de tamaño N.
 inBoard(N,s(F,R)):- F > 0, R > 0, F =< N, R =< N.
 
 % Dada una casilla (s(F,R)), cambiar su valor a falso en un tablero dado (Board).
-visitSquare(s(F,R),Board,BoardSol):-
+visita(s(F,R),Board,BoardSol):-
     nth1(R, Board, Rank),
     replaceInThePosition(Rank, F, false, NewRank),
     replaceInThePosition(Board, R, NewRank, BoardSol).
 
 % Reemplaza el elemento P de la lista por el elemento E.
-replaceInThePosition([_|T],1,E,[E|T]).
+replaceInThePosition([H|T],1,E,[E|T]):-
+    ( atom(H) -> H ; true ).
 replaceInThePosition([H|T],P,E,[H|R]) :-
     P > 1, NP is P-1, replaceInThePosition(T,NP,E,R).
 
-% Comprueba que para el tablero Board la casilla s(F,R) esta libre.
-freeSquare(Board,s(F,R)):-
-    nth1(R, Board, File),
-    nth1(F, File, Value),
-    Value.
-
 % Comprueba que en el tablero (Board) de tamaño N, se puede ir a la casilla s(F,R).
-% Chequea que la posicion está en el tablero (inBoard) y posteriormente comprueba si esta vacia (freeSquare).
-% Si cumple las dos condiciones anteriores visita la posicion del tablero (visitSquare).
+% Chequea que la posicion está en el tablero (inBoard) y posteriormente invoca al nuevo predicado que
+% comprueba si la posicion está libre y mueve el caballo en un solo recorrido del tablero (visita).
 validSquare(N,s(F,R),Board,BoardNuevo):-
     inBoard(N,s(F,R)),
-    freeSquare(Board,s(F,R)),
-    visitSquare(s(F,R),Board,BoardNuevo).
+    visita(s(F,R),Board,BoardNuevo).
 
 % Comprueba que el camino sea completo.
 fullPath(node(N, PL, _, _, _)):- PL =:= N*N.
